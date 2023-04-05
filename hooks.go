@@ -23,6 +23,9 @@ func (e *extension) generate(next gen.Generator) gen.Generator {
 			s = parseTemplate("iris/routes", e.data)
 			writeFile(path.Join(e.data.IrisConfig.RoutesPath, "routes.go"), s)
 
+			s = parseTemplate("iris/util", e.data)
+			writeFile(path.Join(e.data.IrisConfig.HandlersPath, "util.go"), s)
+
 			for _, schema := range g.Schemas {
 				e.data.CurrentSchema = schema
 				s := parseTemplate("iris/handler", e.data)

@@ -1,0 +1,23 @@
+package handlers
+
+import "github.com/kataras/iris/v12"
+
+func StopWithError(ctx iris.Context, code int, err error) {
+	response := iris.Map{
+		"code":   code,
+		"status": "error",
+		"error":  err.Error(),
+	}
+	ctx.StopWithJSON(code, response)
+	ctx.Values().Set("response", response)
+}
+
+func StopWithSuccess(ctx iris.Context, code int, data any) {
+	response := iris.Map{
+		"code":   code,
+		"status": "success",
+		"data":   data,
+	}
+	ctx.StopWithJSON(code, response)
+	ctx.Values().Set("response", response)
+}
