@@ -1,0 +1,279 @@
+package handlers
+
+import (
+	"{{ dir .Package }}/db"
+	"{{ .Package }}"
+	"encoding/json"
+
+	"github.com/kataras/iris/v12"
+)
+
+{{- $pn := pascal .CurrentSchema.Name }}
+{{- $ppn := pascal .CurrentSchema.Name | plural }}
+{{- $cn := camel .CurrentSchema.Name  }}
+{{- $cpn := camel .CurrentSchema.Name | plural }}
+
+
+func Find{{ $pn }}(c iris.Context) {
+	id := c.Params().Get("id")
+	{{ $cn }}, err := db.Client.{{ $pn }}.Get(c.Request().Context(), id)
+	if err != nil {
+		code := iris.StatusNotFound
+		c.StopWithJSON(code, iris.Map{
+			"code":   code,
+			"status": "error",
+			"error":  err.Error(),
+		})
+	}
+
+	c.StopWithJSON(iris.StatusOK, iris.Map{
+		"code":   iris.StatusOK,
+		"status": "success",
+		"data":   {{ $cn }},
+	})
+}
+
+func Find{{ $ppn }}(c iris.Context) {
+	query := new(ent.{{ $pn }}QueryInput)
+	q := c.URLParam("query")
+	if q != "" {
+		err := json.Unmarshal([]byte(q), query)
+		if err != nil {
+			code := iris.StatusBadRequest
+			c.StopWithJSON(code, iris.Map{
+				"code":   code,
+				"status": "error",
+				"error":  err.Error(),
+			})
+		}
+	}
+	{{ $cpn }}, err := db.Client.{{ $pn }}.Query().SetInput(query).All(c.Request().Context())
+	if err != nil {
+		code := iris.StatusBadRequest
+		c.StopWithJSON(code, iris.Map{
+			"code":   code,
+			"status": "error",
+			"error":  err.Error(),
+		})
+	}
+
+	c.StopWithJSON(iris.StatusOK, iris.Map{
+		"code":   iris.StatusOK,
+		"status": "success",
+		"data":   {{ $cpn }},
+	})
+}
+
+func Create{{ $pn }}(c iris.Context) {
+	body := new(ent.{{ $pn }}CreateInput)
+	err := c.ReadBody(body)
+	if err != nil {
+		code := iris.StatusBadRequest
+		c.StopWithJSON(code, iris.Map{
+			"code":   code,
+			"status": "error",
+			"error":  err.Error(),
+		})
+	}
+	{{ $cn }}, err := db.Client.{{ $pn }}.Create().SetInput(body).Save(c.Request().Context())
+	if err != nil {
+		code := iris.StatusBadRequest
+		c.StopWithJSON(code, iris.Map{
+			"code":   code,
+			"status": "error",
+			"error":  err.Error(),
+		})
+	}
+
+	c.StopWithJSON(iris.StatusCreated, iris.Map{
+		"code":   iris.StatusCreated,
+		"status": "success",
+		"data":   {{ $cn }},
+	})
+}
+
+func Create{{ $ppn }}(c iris.Context) {
+	body := []*ent.{{ $pn }}CreateInput{}
+	err := c.ReadBody(&body)
+	if err != nil {
+		c.StopWithJSON(iris.StatusOK, iris.Map{
+			"code":   iris.StatusBadRequest,
+			"status": "error",
+			"error":  err.Error(),
+		})
+	}
+
+	if len(body) == 0 {
+		c.StopWithJSON(iris.StatusOK, iris.Map{
+			"code":   iris.StatusBadRequest,
+			"status": "error",
+			"error":  "empty array body",
+		})
+	}
+
+	builders := []*ent.{{ $pn }}Create{}
+	for _, b := range body {
+		builders = append(builders, db.Client.{{ $pn }}.Create().SetInput(b))
+	}
+
+	{{ $cpn }}, err := db.Client.{{ $pn }}.CreateBulk(builders...).Save(c.Request().Context())
+	if err != nil {
+		code := iris.StatusBadRequest
+		c.StopWithJSON(code, iris.Map{
+			"code":   code,
+			"status": "error",
+			"error":  err.Error(),
+		})
+	}
+
+	c.StopWithJSON(iris.StatusCreated, iris.Map{
+		"code":   iris.StatusCreated,
+		"status": "success",
+		"data":   {{ $cpn }},
+	})
+}
+
+func Update{{ $pn }}(c iris.Context) {
+	id := c.Params().Get("id")
+	body := new(ent.{{ $pn }}UpdateInput)
+	err := c.ReadBody(body)
+	if err != nil {
+		code := iris.StatusBadRequest
+		c.StopWithJSON(code, iris.Map{
+			"code":   code,
+			"status": "error",
+			"data":   err.Error(),
+		})
+	}
+	{{ $cn }}, err := db.Client.{{ $pn }}.UpdateOneID(id).SetInput(body).Save(c.Request().Context())
+	if err != nil {
+		code := iris.StatusBadRequest
+		c.StopWithJSON(code, iris.Map{
+			"code":   code,
+			"status": "error",
+			"error":  err.Error(),
+		})
+	}
+
+	c.StopWithJSON(iris.StatusOK, iris.Map{
+		"code":   iris.StatusOK,
+		"status": "success",
+		"data":   {{ $cn }},
+	})
+}
+
+func Update{{ $ppn }}(c iris.Context) {
+	w := c.URLParam("where")
+	where := new(ent.{{ $pn }}WhereInput)
+
+	action := db.Client.{{ $pn }}.Update()
+	if w != "" {
+		err := json.Unmarshal([]byte(w), where)
+		if err != nil {
+			code := iris.StatusBadRequest
+			c.StopWithJSON(code, iris.Map{
+				"code":   code,
+				"status": "error",
+				"error":  err.Error(),
+			})
+		}
+		predicate, err := where.P()
+		if err != nil {
+			code := iris.StatusBadRequest
+			c.StopWithJSON(code, iris.Map{
+				"code":   code,
+				"status": "error",
+				"error":  err.Error(),
+			})
+		}
+		action = action.Where(predicate)
+	}
+
+	body := new(ent.{{ $pn }}UpdateInput)
+	err := c.ReadBody(body)
+	if err != nil {
+		code := iris.StatusBadRequest
+		c.StopWithJSON(code, iris.Map{
+			"code":   code,
+			"status": "error",
+			"error":  err.Error(),
+		})
+	}
+
+	_, err = action.SetInput(body).Save(c.Request().Context())
+	if err != nil {
+		code := iris.StatusBadRequest
+		c.StopWithJSON(code, iris.Map{
+			"code":   code,
+			"status": "error",
+			"error":  err.Error(),
+		})
+	}
+
+	c.StopWithJSON(iris.StatusOK, iris.Map{
+		"code":   iris.StatusOK,
+		"status": "success",
+	})
+}
+
+func Delete{{ $pn }}(c iris.Context) {
+	id := c.Params().Get("id")
+	err := db.Client.{{ $pn }}.DeleteOneID(id).Exec(c.Request().Context())
+	if err != nil {
+		code := iris.StatusBadRequest
+		c.StopWithJSON(code, iris.Map{
+			"code":   code,
+			"status": "error",
+			"error":  err.Error(),
+		})
+	}
+
+	c.StopWithJSON(iris.StatusOK, iris.Map{
+		"code":   iris.StatusOK,
+		"status": "success",
+	})
+}
+
+func Delete{{ $ppn }}(c iris.Context) {
+	w := c.URLParam("where")
+	where := new(ent.{{ $pn }}WhereInput)
+
+	action := db.Client.{{ $pn }}.Delete()
+	if w != "" {
+		err := json.Unmarshal([]byte(w), where)
+		if err != nil {
+			code := iris.StatusBadRequest
+			c.StopWithJSON(code, iris.Map{
+				"code":   code,
+				"status": "error",
+				"error":  err.Error(),
+			})
+		}
+
+		predicate, err := where.P()
+		if err != nil {
+			code := iris.StatusBadRequest
+			c.StopWithJSON(code, iris.Map{
+				"code":   code,
+				"status": "error",
+				"error":  err.Error(),
+			})
+		}
+		action = action.Where(predicate)
+	}
+
+	_, err := action.Exec(c.Request().Context())
+	if err != nil {
+		code := iris.StatusBadRequest
+		c.StopWithJSON(code, iris.Map{
+			"code":   code,
+			"status": "error",
+			"error":  err.Error(),
+		})
+	}
+
+	c.StopWithJSON(iris.StatusOK, iris.Map{
+		"code":   iris.StatusOK,
+		"status": "success",
+	})
+}
