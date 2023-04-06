@@ -14,7 +14,7 @@ import (
 {{- $cn := camel .CurrentSchema.Name  }}
 {{- $cpn := camel .CurrentSchema.Name | plural }}
 
-func Find{{ $pn }}(ctx iris.Context) {
+func Read{{ $pn }}(ctx iris.Context) {
 	id := ctx.Params().Get("id")
 	{{ $cn }}, err := db.Client.{{ $pn }}.Get(ctx.Request().Context(), id)
 	if err != nil {
@@ -24,7 +24,7 @@ func Find{{ $pn }}(ctx iris.Context) {
 	StopWithSuccess(ctx, iris.StatusOK, {{ $cn }})
 }
 
-func Find{{ $ppn }}(ctx iris.Context) {
+func Read{{ $ppn }}(ctx iris.Context) {
 	query := new(ent.{{ $pn }}QueryInput)
 	q := ctx.URLParam("query")
 	if q != "" {
