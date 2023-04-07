@@ -13,11 +13,11 @@ const (
 	SkipAll
 )
 
-func (a *annotation) Name() string {
+func (a *skipAnnotation) Name() string {
 	return a.name
 }
 
-func (a *annotation) decode(v interface{}) error {
+func (a *skipAnnotation) decode(v interface{}) error {
 	buffer, err := json.Marshal(v)
 	if err != nil {
 		panic(err)
@@ -25,9 +25,9 @@ func (a *annotation) decode(v interface{}) error {
 	return json.Unmarshal(buffer, a)
 }
 
-func Skip(skips ...uint) *annotation {
-	return &annotation{
-		name:    skipAnootationName,
-		Content: skips,
+func Skip(skips ...uint) *skipAnnotation {
+	return &skipAnnotation{
+		name:  skipAnootationName,
+		Skips: skips,
 	}
 }

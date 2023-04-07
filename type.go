@@ -62,7 +62,7 @@ var gots = map[string]string{
 	"json":      "any",
 }
 
-type annotation struct {
-	name    string
-	Content any
+type skipAnnotation struct {
+	name  string
+	Skips []uint
 }

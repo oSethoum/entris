@@ -199,13 +199,10 @@ func skip_type(f *load.Field) bool {
 }
 
 func shouldSkip(f *load.Field, skip uint) bool {
-	a := &annotation{}
+	a := &skipAnnotation{}
 	a.decode(f.Annotations[skipAnootationName])
-	if a.Content != nil {
-		skips := a.Content.([]uint)
-		if in(skip, skips) || in(SkipAll, skips) {
-			return true
-		}
+	if in(skip, a.Skips) || in(SkipAll, a.Skips) {
+		return true
 	}
 	return false
 }
