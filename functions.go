@@ -34,6 +34,10 @@ func init() {
 	gen.Funcs["order_fields"] = order_fields
 	gen.Funcs["select_fields"] = select_fields
 	gen.Funcs["dir"] = path.Dir
+	gen.Funcs["skip_field_create"] = skip_field_create
+	gen.Funcs["skip_field_update"] = skip_field_update
+	gen.Funcs["skip_field_query"] = skip_field_query
+	gen.Funcs["skip_type"] = skip_type
 }
 
 func tag(f *load.Field) string {
@@ -176,4 +180,32 @@ func orderable(f *load.Field) bool {
 		"time.Time",
 		"bool",
 	})
+}
+
+func skip_field_create(f *load.Field) bool {
+	return (f.Default && f.Name == "id") || shouldSkip(f, SkipCreate)
+}
+
+func skip_field_update(f *load.Field) bool {
+	return f.Immutable || (f.Default && f.Name == "id") || shouldSkip(f, SkipUpdate)
+}
+
+func skip_field_query(f *load.Field) bool {
+	return shouldSkip(f, SkipQuery)
+}
+
+func skip_type(f *load.Field) bool {
+	return f.Sensitive || shouldSkip(f, SkipType)
+}
+
+func shouldSkip(f *load.Field, skip uint) bool {
+	a := &annotation{}
+	a.decode(f.Annotations[skipAnootationName])
+	if a.Content != nil {
+		skips := a.Content.([]uint)
+		if in(skip, skips) || in(SkipAll, skips) {
+			return true
+		}
+	}
+	return false
 }

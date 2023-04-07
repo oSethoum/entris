@@ -16,7 +16,9 @@ import (
 {{- range .Schemas }}
     type {{ .Name }}CreateInput struct {
         {{- range .Fields }}
+            {{- if skip_field_create .  }}{{continue}}{{- end}}
             {{ pascal .Name }} {{ if null_field_create . -}}*{{- end -}}{{ extract_type . }} `{{ tag . }}`
+            
         {{- end }}
         {{- range .Edges }}
             {{- if edge_field . | not }}
@@ -35,6 +37,7 @@ import (
 
     func (i *{{ .Name }}CreateInput) Mutate(m *{{ .Name }}Mutation) {
         {{- range .Fields }}
+            {{- if skip_field_create .  }}{{continue}}{{- end}}
             {{- if null_field_create .}} 
             if v := i.{{ pascal .Name }}; v != nil {
             m.Set{{pascal .Name}}(*v)
@@ -67,6 +70,7 @@ import (
 
     type {{ .Name }}UpdateInput struct {
         {{- range .Fields }}
+            {{- if skip_field_update .  }}{{continue}}{{- end}}
             {{ pascal .Name }} {{ if null_field_update . -}}*{{- end -}} {{ extract_type . }} `{{ tag . }}`
         {{- end }}
         {{- range .Edges }}
@@ -91,6 +95,7 @@ import (
 
     func (i *{{ .Name }}UpdateInput) Mutate(m *{{ .Name }}Mutation) {
     {{- range .Fields }}
+        {{- if skip_field_update . }}{{continue}}{{- end}}
         {{- if null_field_update .}} 
         if v := i.{{ pascal .Name }}; v != nil {
         m.Set{{pascal .Name}}(*v)

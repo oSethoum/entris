@@ -46,7 +46,9 @@ type IrisConfig struct {
 	RoutesPath   string
 }
 
-type comparable interface{ ~string | ~int | ~float32 }
+type comparable interface {
+	~string | ~int | ~float32 | ~uint
+}
 
 var gots = map[string]string{
 	"time.Time": "string",
@@ -58,4 +60,9 @@ var gots = map[string]string{
 	"any":       "any",
 	"other":     "any",
 	"json":      "any",
+}
+
+type annotation struct {
+	name    string
+	Content any
 }

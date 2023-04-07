@@ -1,11 +1,33 @@
 package entris
 
-func SkipRoute() {}
+import "encoding/json"
 
-func SkipHanler() {}
+const (
+	skipAnootationName      = "entris-skip"
+	SkipCreate         uint = iota
+	SkipUpdate
+	SkipType
+	SkipQuery
+	SkipField
+	SkipEdge
+	SkipAll
+)
 
-func SkipField() {}
+func (a *annotation) Name() string {
+	return a.name
+}
 
-func SkipEdge() {}
+func (a *annotation) decode(v interface{}) error {
+	buffer, err := json.Marshal(v)
+	if err != nil {
+		panic(err)
+	}
+	return json.Unmarshal(buffer, a)
+}
 
-func NestCreateEdge() {}
+func Skip(skips ...uint) *annotation {
+	return &annotation{
+		name:    skipAnootationName,
+		Content: skips,
+	}
+}

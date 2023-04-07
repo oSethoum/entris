@@ -38,6 +38,7 @@ type OrderField struct {
 	    And 	[]*{{ pascal .Name }}WhereInput `json:"and"`
 
         {{- range .Fields }}
+            {{- if skip_field_query . }} {{continue}} {{- end}}
             {{- if extract_type . | eq "bool" }}
                 {{ pascal .Name }}EQ  *{{ extract_type . }}  `json:"{{ camel .Name }}EQ,omitempty"`
                 {{ pascal .Name }}NEQ *{{ extract_type . }}  `json:"{{ camel .Name }}NEQ,omitempty"`
@@ -127,6 +128,7 @@ type OrderField struct {
         }
 
         {{ range .Fields }}
+            {{- if skip_field_query . }}{{continue}}{{- end}}
             // "{{camel .Name}}" field predicates.
             {{- if extract_type . | eq "bool" }}
             if v := i.{{ pascal .Name }}EQ; v != nil {
