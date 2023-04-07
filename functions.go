@@ -38,6 +38,7 @@ func init() {
 	gen.Funcs["skip_field_update"] = skip_field_update
 	gen.Funcs["skip_field_query"] = skip_field_query
 	gen.Funcs["skip_type"] = skip_type
+	gen.Funcs["skip_schema"] = skip_schema
 }
 
 func tag(f *load.Field) string {
@@ -183,24 +184,28 @@ func orderable(f *load.Field) bool {
 }
 
 func skip_field_create(f *load.Field) bool {
-	return (f.Default && f.Name == "id") || shouldSkip(f, SkipCreate)
+	return (f.Default && f.Name == "id") || shouldSkip(f.Annotations, SkipCreate)
 }
 
 func skip_field_update(f *load.Field) bool {
-	return f.Immutable || (f.Default && f.Name == "id") || shouldSkip(f, SkipUpdate)
+	return f.Immutable || (f.Default && f.Name == "id") || shouldSkip(f.Annotations, SkipUpdate)
 }
 
 func skip_field_query(f *load.Field) bool {
-	return shouldSkip(f, SkipQuery)
+	return shouldSkip(f.Annotations, SkipQuery)
 }
 
 func skip_type(f *load.Field) bool {
-	return f.Sensitive || shouldSkip(f, SkipType)
+	return f.Sensitive || shouldSkip(f.Annotations, SkipType)
 }
 
-func shouldSkip(f *load.Field, skip uint) bool {
+func skip_schema(s *load.Schema) bool {
+	return shouldSkip(s.Annotations, SkipSchema)
+}
+
+func shouldSkip(annotations map[string]any, skip uint) bool {
 	a := &skipAnnotation{}
-	a.decode(f.Annotations[skipAnootationName])
+	a.decode(annotations[skipAnootationName])
 	if in(skip, a.Skips) || in(SkipAll, a.Skips) {
 		return true
 	}

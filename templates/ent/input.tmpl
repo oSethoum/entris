@@ -14,6 +14,7 @@ import (
 {{- end}}
 
 {{- range .Schemas }}
+    {{- if skip_schema . }}{{continue}}{{- end}}
     type {{ .Name }}CreateInput struct {
         {{- range .Fields }}
             {{- if skip_field_create .  }}{{continue}}{{- end}}

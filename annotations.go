@@ -11,6 +11,7 @@ const (
 	SkipField
 	SkipEdge
 	SkipAll
+	SkipSchema
 )
 
 func (a *skipAnnotation) Name() string {

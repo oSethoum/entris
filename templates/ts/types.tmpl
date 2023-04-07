@@ -2,7 +2,7 @@
 
 type OrderDirection = "ASC" | "DESC";
 {{ range $s := .Schemas }}
-
+{{- if skip_schema .}}{{continue}}{{- end}}
 export interface {{ pascal .Name }} {
     {{ range .Fields }}
         {{- if skip_type . }}{{continue}}{{- end}}
@@ -121,6 +121,7 @@ export interface {{ pascal .Name }}WhereInput {
 export type ID = string;
 export type API = {
     {{ range .Schemas}}
+        {{- if skip_schema . }}{{continue}}{{- end}}
         {{ plural .Name | camel }}: {
             createInput: {{ pascal .Name }}CreateInput;
             updateInput: {{ pascal .Name }}UpdateInput;

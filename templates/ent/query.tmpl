@@ -21,6 +21,7 @@ type OrderField struct {
 }
 
 {{- range $k, $s := .Schemas }}
+    {{- if skip_schema . }}{{continue}}{{- end}}
     type {{ pascal .Name }}QueryInput struct {
         Select []string 					    `json:"select,omitempty"`
 	    Offset *int     					    `json:"offset,omitempty"`
